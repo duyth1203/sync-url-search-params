@@ -53,7 +53,9 @@ function App() {
 }
 ```
 
-### Will trigger re-render (pending)
+### Will trigger re-render
+
+[CodeSandbox](https://codesandbox.io/s/demo-sync-url-search-params-p0h2rr)
 
 ---
 
