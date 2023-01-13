@@ -63,7 +63,11 @@ function App() {
 
 1. `SyncURLSearchParams(defaultParams: { [x: string | number | symbol]: string | number | boolean | null | undefined }) => ({ getParam, getAllParams, setParam, setParams, clearParam, clearParams, setCallback })`
 
-   Initial the hook with default params. Automatic URL query params synchronization will happen only once on mount. And take the value from URL search params as priority if it exists.
+   Initialize the hook with default params.
+
+   Automatic URL query params synchronization will happen only once on mount.
+
+   And take the value from URL search params as priority if it exists.
 
 2. `getParam: (key: string) => string`
 

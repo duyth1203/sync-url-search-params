@@ -2,7 +2,7 @@ import { TKey, TRecord, TValue, TCallback } from './types';
 import { isEmpty, isPushStateAvailable, updateURLQueryParam } from './utils';
 
 /**
- * Initial the hook with default params.
+ * Initialize the hook with default params.
  * Automatic URL search params synchronization will happen only once on mount.
  * And take the value from URL search params as priority if it exists.
  */
@@ -14,6 +14,7 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
     if (!isPushStateAvailable()) return;
 
     const searchParams = new URLSearchParams(window.location.search);
+
     Object.keys(defaultParams).forEach(key => {
       const searchParam = searchParams.get(key);
       if (!isEmpty(searchParam)) {
@@ -28,10 +29,11 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
 
   // Action handlers
   /**
-   * Set callback once change event happens (after initialization)
+   * Set callback once change event happens (after initialization), and every time newly set
    */
   setCallback(callback: TCallback<Partial<TParams>>) {
     this.callback = callback;
+    callback(isPushStateAvailable(), Object.fromEntries(this.cache) as TParams);
   }
 
   /**
@@ -62,7 +64,6 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
    * Set a specific key with a value. Empty values (empty string, null, undefined) will be cleared.
    */
   setParam(key: keyof TParams, value: TValue): boolean {
-    console.count('setter');
     if (!isPushStateAvailable()) {
       this.callback?.(false, { [key]: value } as TParams);
       return false;
@@ -70,6 +71,7 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
 
     if (isEmpty(value)) this.cache.delete(key);
     else this.cache.set(key, String(value));
+
     this.callback?.(true, { [key]: value } as TParams);
     updateURLQueryParam(Object.fromEntries(this.cache));
     return true;
