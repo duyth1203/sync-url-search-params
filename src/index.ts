@@ -1,4 +1,4 @@
-import { TKey, TRecord, TValue, TCallback } from './types';
+import { TKey, TRecord, TValue, TOptions, TCallback } from './types';
 import { isEmpty, isPushStateAvailable, updateURLQueryParam } from './utils';
 
 /**
@@ -7,12 +7,14 @@ import { isEmpty, isPushStateAvailable, updateURLQueryParam } from './utils';
  * And take the value from URL search params as priority if it exists.
  */
 export default class SyncURLSearchParams<TParams extends TRecord> {
+  private readonly options: TOptions = {};
   private callback?: TCallback<Partial<TParams>>;
   private readonly cache = new Map<keyof TParams, TValue>();
 
-  constructor(defaultParams: TParams) {
+  constructor(defaultParams: TParams, options: TOptions = {}) {
     if (!isPushStateAvailable()) return;
 
+    this.options = options;
     const searchParams = new URLSearchParams(window.location.search);
 
     Object.keys(defaultParams).forEach(key => {
@@ -24,18 +26,14 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
       }
     });
 
-    updateURLQueryParam(Object.fromEntries(this.cache) as TParams);
+    updateURLQueryParam(
+      [],
+      this.getAllParams(),
+      options.shouldKeepURLUndeclaredParams
+    );
   }
 
   // Action handlers
-  /**
-   * Set callback once change event happens (after initialization), and every time newly set
-   */
-  setCallback(callback: TCallback<Partial<TParams>>) {
-    this.callback = callback;
-    callback(isPushStateAvailable(), Object.fromEntries(this.cache) as TParams);
-  }
-
   /**
    * Get specific key from search params. Autosuggestion mapped to keys of the default params.
    */
@@ -61,59 +59,89 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
   }
 
   /**
+   * Set callback that invokes once change event happens (after initialization), and every time newly set if opt in.
+   */
+  setCallback(
+    callback: TCallback<Partial<TParams>>,
+    shouldInvokeCallbackWhenSet?: boolean
+  ) {
+    this.callback = callback;
+    if (shouldInvokeCallbackWhenSet) {
+      callback(isPushStateAvailable(), this.getAllParams());
+    }
+  }
+
+  /**
    * Set a specific key with a value. Empty values (empty string, null, undefined) will be cleared.
    */
-  setParam(key: keyof TParams, value: TValue): boolean {
+  setParam(key: keyof TParams, value: TValue, options: TOptions = {}): boolean {
     if (!isPushStateAvailable()) {
-      this.callback?.(false, { [key]: value } as TParams);
+      this.callback?.(false, this.getAllParams());
       return false;
     }
 
+    const prevCacheKeys = Array.from(this.cache.keys());
     if (isEmpty(value)) this.cache.delete(key);
     else this.cache.set(key, String(value));
 
-    this.callback?.(true, { [key]: value } as TParams);
-    updateURLQueryParam(Object.fromEntries(this.cache));
+    const mergedOptions = { ...this.options, ...options };
+    updateURLQueryParam(
+      prevCacheKeys,
+      this.getAllParams(),
+      mergedOptions.shouldKeepURLUndeclaredParams
+    );
+
+    this.callback?.(true, this.getAllParams());
+
     return true;
   }
 
   /**
    * Set a set of records. Empty values (empty string, null, undefined) will be cleared.
    */
-  setParams(newParams: Partial<TParams>): boolean {
+  setParams(newParams: Partial<TParams>, options: TOptions = {}): boolean {
     if (!isPushStateAvailable()) {
-      this.callback?.(false, newParams);
+      this.callback?.(false, this.getAllParams());
       return false;
     }
 
+    const prevCacheKeys = Array.from(this.cache.keys());
     Object.entries(newParams).forEach(([key, value]) => {
       if (isEmpty(value)) this.cache.delete(key);
       else this.cache.set(key, String(value));
     });
 
-    this.callback?.(true, newParams);
-    updateURLQueryParam(Object.fromEntries(this.cache));
+    this.callback?.(true, this.getAllParams());
+
+    const mergedOptions = { ...this.options, ...options };
+    updateURLQueryParam(
+      prevCacheKeys,
+      this.getAllParams(),
+      mergedOptions.shouldKeepURLUndeclaredParams
+    );
+
     return true;
   }
 
   /**
    * Clear specific key from search params. Same as `setParam` with empty value.
    */
-  clearParam(key: keyof TParams): boolean {
-    return this.setParam(key, undefined);
+  clearParam(key: keyof TParams, options: TOptions = {}): boolean {
+    return this.setParam(key, undefined, options);
   }
 
   /**
    * Clear a set of keys from search params. Same as `setParams` with empty values.
    * > If input is empty, all params will be cleared
    */
-  clearParams(...keys: Array<keyof TParams>): boolean {
-    const _keys = keys.length ? keys : Array.from(this.cache.keys());
+  clearParams(keys?: Array<keyof TParams>, options: TOptions = {}): boolean {
+    const _keys = keys?.length ? keys : Array.from(this.cache.keys());
     const emptyParams = _keys.reduce((acc, key) => {
       acc[key] = undefined;
       return acc;
     }, {} as Partial<TParams>);
-    return this.setParams(emptyParams);
+
+    return this.setParams(emptyParams, options);
   }
 }
 

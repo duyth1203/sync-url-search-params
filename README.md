@@ -61,7 +61,7 @@ function App() {
 
 ## APIs
 
-1. `SyncURLSearchParams(defaultParams: { [x: string | number | symbol]: string | number | boolean | null | undefined }) => ({ getParam, getAllParams, setParam, setParams, clearParam, clearParams, setCallback })`
+1. `SyncURLSearchParams(defaultParams: { [x: string | number | symbol]: string | number | boolean | null | undefined }, options?: { shouldKeepURLUndeclaredParams?: boolean }) => ({ getParam, getAllParams, setParam, setParams, clearParam, clearParams, setCallback })`
 
    Initialize the hook with default params.
 
@@ -81,30 +81,30 @@ function App() {
 
    Get all query params. The result contains all records with keys of the default params except those that were cleared.
 
-5. `setParam: (key: string | number | symbol, value: string | number | boolean | null | undefined) => boolean`
+5. `setParam: (key: string | number | symbol, value: string | number | boolean | null | undefined, options?: { shouldKeepURLUndeclaredParams?: boolean }) => boolean`
 
    Set a specific key with a value. Empty values (empty string, null, undefined) will be cleared.
 
    - Return `true` if successfully set
    - Otherwise `false` if `window.history.pushState` is not available
 
-6. `setParams: (Object<key: string | number | symbol, value: string | number | boolean | null | undefined>) => boolean`
+6. `setParams: (Object<key: string | number | symbol, value: string | number | boolean | null | undefined>, options?: { shouldKeepURLUndeclaredParams?: boolean }) => boolean`
 
    Set a set of records. Empty values (empty string, null, undefined) will be cleared.
 
    - Return `true` if successfully set
    - Otherwise `false` if `window.history.pushState` is not available
 
-7. `clearParam: (key: string) => boolean`
+7. `clearParam: (key: string, options?: { shouldKeepURLUndeclaredParams?: boolean }) => boolean`
 
    Clear specific key from query params. Same as `setParam` with empty value.
 
-8. `clearParams: (...keys: string[]) => boolean`
+8. `clearParams: (keys?: string[], options?: { shouldKeepURLUndeclaredParams?: boolean }) => boolean`
 
    Clear a set of keys from query params. Same as `setParams` with empty values.
 
    > If input is empty, all params will be cleared
 
-9. `setCallback(callback: TCallback<TParams>) => void`
+9. `setCallback<T>(callback: (result: boolean, params: T) => void, shouldInvokeCallbackWhenSet?: boolean)`
 
-   Set callback once change event happens (after initialization)
+   Set callback that invokes once change event happens (after initialization), and every time newly set if opt in.

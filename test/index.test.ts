@@ -87,11 +87,19 @@ describe('Test `SyncURLSearchParams`', () => {
     const callback = jest.fn();
     const susp = new SyncURLSearchParams({ foo: 'bar', foo2: 'baz' });
     susp.setCallback(callback);
+    expect(callback).not.toHaveBeenCalled();
     susp.setParams({ foo: 'baz', foo2: undefined });
     expect(window.location.search).toBe('?foo=baz');
     expect(susp.getParam('foo')).toBe('baz');
     expect(susp.getParam('foo2')).toBeUndefined();
     expect(callback).toBeCalledWith(true, { foo: 'baz', foo2: undefined });
+  });
+
+  it('should invoke callback on set if opted in', () => {
+    const callback = jest.fn();
+    const susp = new SyncURLSearchParams({ foo: 'bar' });
+    susp.setCallback(callback, true);
+    expect(callback).toHaveBeenCalled();
   });
 
   it('should not set a set of params when `window.history.pushState` is not available', () => {
@@ -108,7 +116,7 @@ describe('Test `SyncURLSearchParams`', () => {
 
   it('should clear a set of params properly', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar', foo2: 'bar2' });
-    susp.clearParams('foo', 'foo2');
+    susp.clearParams(['foo', 'foo2']);
     expect(window.location.search).toBe('');
     expect(susp.getParam('foo')).toBeUndefined();
     expect(susp.getParam('foo2')).toBeUndefined();
@@ -130,5 +138,25 @@ describe('Test `SyncURLSearchParams`', () => {
     window.history.pushState({}, '', '?foo=bar');
     const susp = new SyncURLSearchParams({ foo: 'baz' });
     expect(susp.getParam('foo')).toBe('bar');
+  });
+
+  it('should keep undeclared search params', () => {
+    window.history.pushState({}, '', '?foo=bar&foo2=baz');
+    const susp = new SyncURLSearchParams(
+      { foo: 'baz' },
+      { shouldKeepURLUndeclaredParams: true }
+    );
+    expect(susp.getParam('foo')).toBe('bar');
+    susp.clearParams(['foo']);
+    expect(susp.getParam('foo')).toBeFalsy();
+    expect(window.location.search).toBe('?foo2=baz');
+  });
+
+  it('should clear all declared params if invoking clearParams with empty input', () => {
+    const susp = new SyncURLSearchParams({ foo: 'bar', foo2: 'baz' });
+    susp.clearParams();
+    expect(window.location.search).toBe('');
+    expect(susp.getParam('foo')).toBeUndefined();
+    expect(susp.getParam('foo2')).toBeUndefined();
   });
 });
