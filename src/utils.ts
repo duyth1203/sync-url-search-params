@@ -1,11 +1,10 @@
-import { TKey, TRecord } from './types';
+import { TRecord } from './types';
 
 export function isEmpty(value: any): boolean {
   return value === '' || value === null || value === undefined;
 }
 
 function stringifyParams(
-  prevCacheKeys: Array<TKey>,
   params: TRecord,
   shouldKeepURLUndeclaredParams?: boolean
 ): string {
@@ -16,7 +15,9 @@ function stringifyParams(
       .replace('?', '')
       .split('&')
       .map(param => param.split('='))
-      .filter(([key, value]) => !isEmpty(value) && !prevCacheKeys.includes(key))
+      .filter(
+        ([key, value]) => !isEmpty(value) && !Object.keys(params).includes(key)
+      )
       .forEach(([key, value]) => searchParams.set(key, value));
   }
 
@@ -28,12 +29,10 @@ function stringifyParams(
 }
 
 export function updateURLQueryParam(
-  prevCacheKeys: Array<TKey>,
   params: TRecord,
   shouldKeepURLUndeclaredParams?: boolean
 ): void {
   const stringifiedParams = stringifyParams(
-    prevCacheKeys,
     params,
     shouldKeepURLUndeclaredParams
   );

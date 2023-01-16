@@ -27,7 +27,6 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
     });
 
     updateURLQueryParam(
-      [],
       this.getAllParams(),
       options.shouldKeepURLUndeclaredParams
     );
@@ -80,18 +79,19 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
       return false;
     }
 
-    const prevCacheKeys = Array.from(this.cache.keys());
-    if (isEmpty(value)) this.cache.delete(key);
+    if (isEmpty(value)) this.cache.set(key, '');
     else this.cache.set(key, String(value));
 
     const mergedOptions = { ...this.options, ...options };
     updateURLQueryParam(
-      prevCacheKeys,
       this.getAllParams(),
       mergedOptions.shouldKeepURLUndeclaredParams
     );
 
-    this.callback?.(true, this.getAllParams());
+    this.callback?.(true, {
+      ...this.getAllParams(),
+      [key]: isEmpty(value) ? '' : value,
+    });
 
     return true;
   }
@@ -105,17 +105,15 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
       return false;
     }
 
-    const prevCacheKeys = Array.from(this.cache.keys());
     Object.entries(newParams).forEach(([key, value]) => {
-      if (isEmpty(value)) this.cache.delete(key);
+      if (isEmpty(value)) this.cache.set(key, '');
       else this.cache.set(key, String(value));
     });
 
-    this.callback?.(true, this.getAllParams());
+    this.callback?.(true, { ...newParams, ...this.getAllParams() });
 
     const mergedOptions = { ...this.options, ...options };
     updateURLQueryParam(
-      prevCacheKeys,
       this.getAllParams(),
       mergedOptions.shouldKeepURLUndeclaredParams
     );

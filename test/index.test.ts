@@ -38,22 +38,22 @@ describe('Test `SyncURLSearchParams`', () => {
   it('should set query empty `string` properly', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar' });
     susp.setParam('foo', '');
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=');
+    expect(susp.getParam('foo')).toBe('');
   });
 
   it('should set query `null` properly', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar' });
     susp.setParam('foo', null);
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=');
+    expect(susp.getParam('foo')).toBe('');
   });
 
   it('should set query `undefined` properly', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar' });
     susp.setParam('foo', undefined);
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=');
+    expect(susp.getParam('foo')).toBe('');
   });
 
   it('should clear query param properly', () => {
@@ -61,8 +61,8 @@ describe('Test `SyncURLSearchParams`', () => {
     let setterResult: boolean = false;
     setterResult = susp.clearParam('foo');
     expect(setterResult).toBeTruthy();
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=');
+    expect(susp.getParam('foo')).toBe('');
   });
 
   it('should not sync default param with empty value to URL query params', () => {
@@ -89,10 +89,10 @@ describe('Test `SyncURLSearchParams`', () => {
     susp.setCallback(callback);
     expect(callback).not.toHaveBeenCalled();
     susp.setParams({ foo: 'baz', foo2: undefined });
-    expect(window.location.search).toBe('?foo=baz');
+    expect(window.location.search).toBe('?foo=baz&foo2=');
     expect(susp.getParam('foo')).toBe('baz');
-    expect(susp.getParam('foo2')).toBeUndefined();
-    expect(callback).toBeCalledWith(true, { foo: 'baz', foo2: undefined });
+    expect(susp.getParam('foo2')).toBe('');
+    expect(callback).toBeCalledWith(true, { foo: 'baz', foo2: '' });
   });
 
   it('should invoke callback on set if opted in', () => {
@@ -117,9 +117,9 @@ describe('Test `SyncURLSearchParams`', () => {
   it('should clear a set of params properly', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar', foo2: 'bar2' });
     susp.clearParams(['foo', 'foo2']);
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
-    expect(susp.getParam('foo2')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=&foo2=');
+    expect(susp.getParam('foo')).toBe('');
+    expect(susp.getParam('foo2')).toBe('');
   });
 
   it('should get a set of query params properly', () => {
@@ -148,15 +148,15 @@ describe('Test `SyncURLSearchParams`', () => {
     );
     expect(susp.getParam('foo')).toBe('bar');
     susp.clearParams(['foo']);
-    expect(susp.getParam('foo')).toBeFalsy();
-    expect(window.location.search).toBe('?foo2=baz');
+    expect(susp.getParam('foo')).toBe('');
+    expect(window.location.search).toBe('?foo2=baz&foo=');
   });
 
   it('should clear all declared params if invoking clearParams with empty input', () => {
     const susp = new SyncURLSearchParams({ foo: 'bar', foo2: 'baz' });
     susp.clearParams();
-    expect(window.location.search).toBe('');
-    expect(susp.getParam('foo')).toBeUndefined();
-    expect(susp.getParam('foo2')).toBeUndefined();
+    expect(window.location.search).toBe('?foo=&foo2=');
+    expect(susp.getParam('foo')).toBe('');
+    expect(susp.getParam('foo2')).toBe('');
   });
 });
