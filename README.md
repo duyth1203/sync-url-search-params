@@ -61,7 +61,7 @@ function App() {
 
 ## APIs
 
-1. `SyncURLSearchParams(defaultParams: { [x: string | number | symbol]: string | number | boolean | null | undefined }, options?: { shouldKeepURLUndeclaredParams?: boolean }) => ({ getParam, getAllParams, setParam, setParams, clearParam, clearParams, setCallback })`
+1. `SyncURLSearchParams(defaultParams: { [x: string | number | symbol]: string | number | boolean | null | undefined }, options?: { shouldKeepURLUndeclaredParams?: boolean }) => ({ getParam, getParams, getAllParams, setParam, setParams, clearParam, clearParams, setCallback })`
 
    Initialize the hook with default params.
 
@@ -105,6 +105,6 @@ function App() {
 
    > If input is empty, all params will be cleared
 
-9. `setCallback<T>(callback: (result: boolean, params: T) => void, shouldInvokeCallbackWhenSet?: boolean)`
+9. `setCallback<T>(callback: (result: boolean, params: T) => void, shouldInvokeCallbackImmediately?: boolean)`
 
    Set callback that invokes once change event happens (after initialization), and every time newly set if opt in.

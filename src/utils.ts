@@ -14,11 +14,13 @@ function stringifyParams(
     window.location.search
       .replace('?', '')
       .split('&')
-      .map(param => param.split('='))
+      .map((param) => param.split('='))
       .filter(
         ([key, value]) => !isEmpty(value) && !Object.keys(params).includes(key)
       )
-      .forEach(([key, value]) => searchParams.set(key, value));
+      .forEach(([key, value]) =>
+        searchParams.set(key, encodeURIComponent(value))
+      );
   }
 
   Object.entries(params).forEach(([key, value]) => {

@@ -20,7 +20,7 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
     Object.keys(defaultParams).forEach(key => {
       const searchParam = searchParams.get(key);
       if (!isEmpty(searchParam)) {
-        this.cache.set(key, String(searchParam));
+        this.cache.set(key, String(decodeURIComponent(searchParam as string)));
       } else if (!isEmpty(defaultParams[key])) {
         this.cache.set(key, String(defaultParams[key]));
       }
@@ -62,10 +62,10 @@ export default class SyncURLSearchParams<TParams extends TRecord> {
    */
   setCallback(
     callback: TCallback<Partial<TParams>>,
-    shouldInvokeCallbackWhenSet?: boolean
+    shouldInvokeCallbackImmediately?: boolean
   ) {
     this.callback = callback;
-    if (shouldInvokeCallbackWhenSet) {
+    if (shouldInvokeCallbackImmediately) {
       callback(isPushStateAvailable(), this.getAllParams());
     }
   }
